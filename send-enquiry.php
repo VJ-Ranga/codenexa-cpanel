@@ -1,6 +1,9 @@
 <?php
 declare(strict_types=1);
 
+use PHPMailer\PHPMailer\Exception as MailException;
+use PHPMailer\PHPMailer\PHPMailer;
+
 header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-store');
 
@@ -96,15 +99,43 @@ $body = implode("\n", [
     $details,
 ]);
 
-$mailbox = 'info@codenexa.com.lk';
-$headers = [
-    'From' => $mailbox,
-    'Reply-To' => $email,
-    'Content-Type' => 'text/plain; charset=UTF-8',
-];
+$accountRoot = dirname(__DIR__);
+$smtpPath = $accountRoot . '/codenexa-smtp.json';
+$autoload = $accountRoot . '/codenexa-mailer/autoload.php';
+$smtp = is_readable($smtpPath) ? json_decode((string) file_get_contents($smtpPath), true) : null;
+$host = $smtp['host'] ?? '';
+$port = $smtp['port'] ?? 0;
+$password = $smtp['password'] ?? '';
 
-if (!function_exists('mail') || !mail($mailbox, 'CodeNexa website enquiry', $body, $headers)) {
-    error_log('CodeNexa enquiries: PHP mail did not accept the message.');
+if (!is_string($host) || !filter_var($host, FILTER_VALIDATE_DOMAIN, FILTER_FLAG_HOSTNAME)
+    || !in_array($port, [465, 587], true) || !is_string($password) || $password === ''
+    || !is_readable($autoload)) {
+    error_log('CodeNexa enquiries: SMTP configuration or mailer is unavailable.');
+    respond(503, 'The form is temporarily unavailable. Please contact us by email or WhatsApp.');
+}
+
+require_once $autoload;
+
+try {
+    $sender = 'web@codenexa.com.lk';
+    $mail = new PHPMailer(true);
+    $mail->isSMTP();
+    $mail->Host = $host;
+    $mail->Port = $port;
+    $mail->SMTPSecure = $port === 465 ? PHPMailer::ENCRYPTION_SMTPS : PHPMailer::ENCRYPTION_STARTTLS;
+    $mail->SMTPAuth = true;
+    $mail->Username = $sender;
+    $mail->Password = $password;
+    $mail->Timeout = 10;
+    $mail->CharSet = PHPMailer::CHARSET_UTF8;
+    $mail->setFrom($sender, 'CodeNexa Website');
+    $mail->addAddress('info@codenexa.com.lk');
+    $mail->addReplyTo($email);
+    $mail->Subject = 'CodeNexa website enquiry';
+    $mail->Body = $body;
+    $mail->send();
+} catch (MailException $exception) {
+    error_log('CodeNexa enquiries: SMTP delivery failed.');
     respond(503, 'We couldn’t send your enquiry. Please try again or contact us directly.');
 }
 
