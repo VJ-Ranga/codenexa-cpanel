@@ -2,4 +2,4 @@
 deployment:
   tasks:
     - export DEPLOYPATH="$HOME/codenexa.com.lk"
-    - /usr/bin/test -d "$DEPLOYPATH" && /bin/cp -R 404.html _astro about assets blog contact index.html pricing robots.txt services sitemap.xml "$DEPLOYPATH/"
+    - /usr/bin/test -d "$DEPLOYPATH" && /bin/cp -R 404.html _astro about assets blog contact index.html pricing robots.txt send-enquiry.php services sitemap.xml "$DEPLOYPATH/"
