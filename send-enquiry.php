@@ -59,17 +59,31 @@ if ($token === '' || strlen($token) > 2048) {
     respond(422, 'Complete the spam check and try again.');
 }
 
-$secretPath = dirname(__DIR__) . '/codenexa-turnstile-secret.txt';
-$secret = is_readable($secretPath) ? trim((string) file_get_contents($secretPath)) : '';
-if ($secret === '' || !function_exists('curl_init')) {
-    error_log('CodeNexa enquiries: Turnstile secret or PHP cURL is unavailable.');
+$accountRoot = dirname(__DIR__);
+$configPath = $accountRoot . '/codenexa-mail.php';
+$autoload = $accountRoot . '/codenexa-mailer/autoload.php';
+try {
+    $config = is_readable($configPath) ? require $configPath : [];
+} catch (Throwable) {
+    $config = [];
+}
+$secret = $config['turnstile_secret'] ?? '';
+$host = $config['smtp_host'] ?? '';
+$port = $config['smtp_port'] ?? 0;
+$password = $config['smtp_pass'] ?? '';
+
+if (!is_string($secret) || trim($secret) === '' || !function_exists('curl_init')
+    || !is_string($host) || !filter_var($host, FILTER_VALIDATE_DOMAIN, FILTER_FLAG_HOSTNAME)
+    || !in_array($port, [465, 587], true) || !is_string($password) || $password === ''
+    || !is_readable($autoload)) {
+    error_log('CodeNexa enquiries: mail configuration, PHP cURL, or mailer is unavailable.');
     respond(503, 'The form is temporarily unavailable. Please contact us by email or WhatsApp.');
 }
 
 $request = curl_init('https://challenges.cloudflare.com/turnstile/v0/siteverify');
 curl_setopt_array($request, [
     CURLOPT_POST => true,
-    CURLOPT_POSTFIELDS => http_build_query(['secret' => $secret, 'response' => $token]),
+    CURLOPT_POSTFIELDS => http_build_query(['secret' => trim($secret), 'response' => $token]),
     CURLOPT_RETURNTRANSFER => true,
     CURLOPT_CONNECTTIMEOUT => 4,
     CURLOPT_TIMEOUT => 8,
@@ -98,21 +112,6 @@ $body = implode("\n", [
     '',
     $details,
 ]);
-
-$accountRoot = dirname(__DIR__);
-$smtpPath = $accountRoot . '/codenexa-smtp.json';
-$autoload = $accountRoot . '/codenexa-mailer/autoload.php';
-$smtp = is_readable($smtpPath) ? json_decode((string) file_get_contents($smtpPath), true) : null;
-$host = $smtp['host'] ?? '';
-$port = $smtp['port'] ?? 0;
-$password = $smtp['password'] ?? '';
-
-if (!is_string($host) || !filter_var($host, FILTER_VALIDATE_DOMAIN, FILTER_FLAG_HOSTNAME)
-    || !in_array($port, [465, 587], true) || !is_string($password) || $password === ''
-    || !is_readable($autoload)) {
-    error_log('CodeNexa enquiries: SMTP configuration or mailer is unavailable.');
-    respond(503, 'The form is temporarily unavailable. Please contact us by email or WhatsApp.');
-}
 
 require_once $autoload;
 
