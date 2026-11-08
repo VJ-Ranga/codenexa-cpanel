@@ -1,0 +1,17 @@
+# CodeNexa
+
+> CodeNexa is a Sri Lankan IT and digital marketing agency offering website development, custom software, website maintenance, branding, and social media marketing.
+
+## Services
+
+- [Web Development](https://codenexa.com.lk/services/website-development/): Business websites, online stores, bookings, and website improvements for businesses in Sri Lanka.
+- [Brand & Identity](https://codenexa.com.lk/services/brand-identity/): Logo design, colour palettes, typography and brand guidelines for businesses in Sri Lanka.
+- [Social Media](https://codenexa.com.lk/services/social-media-marketing/): Social media management, post design, video editing, AI video production and Facebook advertising for Sri Lankan businesses.
+- [Custom Software Development](https://codenexa.com.lk/services/custom-software-development/): Custom software development for bookings, customer portals, dashboards, internal tools, and system integrations.
+- [Website Maintenance](https://codenexa.com.lk/services/website-maintenance/): Monthly website maintenance, troubleshooting, website security, and hosting support for businesses in Sri Lanka.
+
+## Company and enquiries
+
+- [About CodeNexa](https://codenexa.com.lk/about/): Learn about the team and how projects are planned and delivered.
+- [Pricing and packages](https://codenexa.com.lk/pricing/): See current package details and how custom projects are quoted.
+- [Contact CodeNexa](https://codenexa.com.lk/contact/): Send a project enquiry or find the company’s phone, email, and WhatsApp details.
